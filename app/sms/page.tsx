@@ -5,9 +5,15 @@ import FormBtn from "@/components/form-btn";
 import SocialLogin from "@/components/social-login";
 import { useFormState } from "react-dom";
 import { smsVerification } from "./actions";
+import { error } from "console";
+
+const initialState = {
+  token: false,
+  error: undefined,
+};
 
 export default function SmsLogin() {
-  const [state, dispatch] = useFormState(smsVerification, null);
+  const [state, dispatch] = useFormState(smsVerification, initialState);
   return (
     <div className="flex flex-col gap-10 py-8 px-6">
       <div className="flex flex-col gap-2 *:font-medium">
@@ -15,21 +21,27 @@ export default function SmsLogin() {
         <h2 className="text-xl">전화번호로 시작하세요.</h2>
       </div>
       <form action={dispatch} className="flex flex-col gap-3">
-        <FormInput
-          name="phone"
-          type="text"
-          placeholder="Phone number"
-          required
-          errors={[]}
+        {state.token ? (
+          <FormInput
+            name="token"
+            type="number"
+            placeholder="Verification code"
+            required
+            errors={state.error?.formErrors}
+          />
+        ) : (
+          <FormInput
+            name="phone"
+            type="text"
+            placeholder="Phone number"
+            required
+            errors={state.error?.formErrors}
+          />
+        )}
+
+        <FormBtn
+          text={state.token ? "Verify Token" : "Send Verification SMS"}
         />
-        <FormInput
-          name="token"
-          type="number"
-          placeholder="Verification code"
-          required
-          errors={[]}
-        />
-        <FormBtn text="Verify" />
       </form>
     </div>
   );
