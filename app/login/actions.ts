@@ -1,13 +1,22 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { z } from "zod";
 
-export async function handleForm(prevState: any, formData: FormData) {
-  // 기본적으로 폼데이터로 보내기도 하고
-  // server component의 server action이라 폼 데이터를 바로 받아옴
-  console.log(prevState);
-  await new Promise((resolve) => setTimeout(resolve, 5000));
-  //redirect("/");
-  console.log("run in server");
-  return { errors: ["password wrong", "password too short"] };
+const formSchema = z.object({
+  email: z.string().trim().email(),
+  password: z.string().min(10),
+});
+
+export async function login(prevState: any, formData: FormData) {
+  const data = {
+    email: formData.get("email"),
+    password: formData.get("password"),
+  };
+  const result = formSchema.safeParse(data);
+  if (!result.success) {
+    return result.error.flatten();
+  } else {
+    console.log(result.data);
+  }
 }
