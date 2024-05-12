@@ -25,12 +25,7 @@ const checkUniqueUsername = async (username: string) => {
       id: true,
     },
   });
-  // if (user) {
-  //   return false;
-  // } else {
-  //   return true;
-  // }
-  return !Boolean(user);
+  return Boolean(user);
 };
 
 const checkUniqueEmail = async (email: string) => {
@@ -42,29 +37,42 @@ const checkUniqueEmail = async (email: string) => {
       id: true,
     },
   });
-  return !Boolean(user);
+  return Boolean(user);
 };
 
 const formSchema = z
   .object({
-    username: z
-      .string()
-      .trim()
-      .min(3, "short!")
-      .max(10)
-      .refine(checkUniqueUsername, "This username is already taken"),
-    email: z
-      .string()
-      .email()
-      .refine(checkUniqueEmail, "This email is already taken"),
+    username: z.string().trim().min(3, "short!").max(10),
+    email: z.string().email(),
     password: z.string().min(10),
     passwordConfirmation: z.string().min(10),
+  })
+  .superRefine(async ({ username, email }, ctx) => {
+    const isExitedEmail = await checkUniqueEmail(email);
+    if (isExitedEmail) {
+      ctx.addIssue({
+        code: "custom",
+        message: "This email is already taken",
+        path: ["email"],
+        fatal: true,
+      });
+      return z.NEVER;
+    }
+    const isExitedUsername = await checkUniqueUsername(username);
+    if (isExitedUsername) {
+      ctx.addIssue({
+        code: "custom",
+        message: "This username is already taken",
+        path: ["username"],
+        fatal: true,
+      });
+      return z.NEVER;
+    }
   })
   .refine(checkPasswords, {
     path: ["passwordConfirmation"],
     message: "Both passwords must match",
   });
-
 export async function createAccount(prevState: any, formData: FormData) {
   const data = {
     username: formData.get("username"),
