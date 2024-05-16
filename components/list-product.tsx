@@ -22,7 +22,9 @@ export default function ListProduct({
       <div className="relative size-28 rounded-md overflow-hidden">
         {/* 나중에 사용할 때는 width와 height를 지정하지 않고 fill 속성을 주면 Image에 absolute가 될 것이고 width, height에 100%를 준다 */}
         {/* 부모에서 relative를 주고 4/3 비율 등을 지정할 때 쓰면 될 듯하다. */}
-        <Image src={photo} alt="title" fill />
+        {/* {이미지 최적화도 코스트가 있으니?(vercel 아니면 없는것인가) unoptimized 속성을 주고 사용 안하는 것도 방법이다.} */}
+        {/* {이미지 비율 유지되도록 cover 해주면 좋음} */}
+        <Image src={photo} alt="title" fill className="object-cover" />
         {/* 기본적으로 Image는 onError 속성이 있어서 불러오지 못했을 경우에 대체 이미지를 보여줄 수 있다. */}
       </div>
       <div className="flex flex-col gap-1 *:text-white">
