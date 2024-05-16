@@ -2,7 +2,7 @@
 
 import { InitailProducts } from "@/app/(tabs)/products/page";
 import ListProduct from "./list-product";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getMoreProduct } from "@/app/(tabs)/products/actions";
 
 interface ProductList {
@@ -14,6 +14,37 @@ export default function ProductList({ initialProducts }: ProductList) {
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [isLast, setIsLast] = useState(false);
+  const trigger = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      async (
+        entries: IntersectionObserverEntry[],
+        observer: IntersectionObserver
+      ) => {
+        const element = entries[0];
+        if (element.isIntersecting && trigger.current) {
+          observer.unobserve(trigger.current);
+          setIsLoading(true);
+          const newProducts = await getMoreProduct(page + 1);
+          if (newProducts.length !== 0) {
+            setPage(page + 1);
+            setProducts((prev) => [...prev, ...newProducts]);
+          } else {
+            setIsLast(true);
+          }
+          setIsLoading(false);
+        }
+      },
+      { threshold: 1.0 }
+    );
+    if (trigger.current) {
+      observer.observe(trigger.current);
+    }
+    return () => {
+      observer.disconnect();
+    };
+  }, [page]);
 
   const onLoadMoreClick = async () => {
     setIsLoading(true);
@@ -32,13 +63,12 @@ export default function ProductList({ initialProducts }: ProductList) {
         <ListProduct key={product.id} {...product} />
       ))}
       {!isLast && (
-        <button
-          onClick={onLoadMoreClick}
-          disabled={isLoading}
+        <span
+          ref={trigger}
           className="primary-btn py-2.5 text-center text-white w-48 mx-auto"
         >
           {isLoading ? "불러오는 중" : "Load more"}
-        </button>
+        </span>
       )}
     </div>
   );
