@@ -7,6 +7,10 @@ const nextConfig = {
         hostname: "i.namu.wiki",
         port: "",
       },
+      {
+        protocol: "https",
+        hostname: "imagedelivery.net",
+      },
     ],
   },
 };

@@ -3,22 +3,7 @@
 import db from "@/libs/db";
 import getSession from "@/libs/session";
 import { redirect } from "next/navigation";
-import { z } from "zod";
-
-const productSchema = z.object({
-  photo: z.string({
-    required_error: "Photo is required",
-  }),
-  title: z.string({
-    required_error: "Title is required",
-  }),
-  description: z.string({
-    required_error: "Description is required",
-  }),
-  price: z.coerce.number({
-    required_error: "Price is required",
-  }),
-});
+import productSchema from "./schema";
 
 export async function uploadProduct(formData: FormData) {
   const data = {
@@ -27,10 +12,7 @@ export async function uploadProduct(formData: FormData) {
     price: formData.get("price"),
     description: formData.get("description"),
   };
-  if (data.photo instanceof File) {
-    const photoData = await data.photo.arrayBuffer();
-    console.log(photoData);
-  }
+
   const result = productSchema.safeParse(data);
   if (!result.success) {
     return result.error.flatten();
@@ -42,7 +24,7 @@ export async function uploadProduct(formData: FormData) {
           title: result.data.title,
           description: result.data.description,
           price: result.data.price,
-          photo: "",
+          photo: result.data.photo,
           user: {
             connect: {
               id: session.id,
@@ -56,4 +38,19 @@ export async function uploadProduct(formData: FormData) {
       redirect(`/products/${product.id}`);
     }
   }
+}
+
+export async function getUploadUrl() {
+  const response = await fetch(
+    `https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/images/v2/direct_upload`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.CLOUDFLARE_API_KEY}`,
+      },
+    }
+  );
+  // 받은 url을 사용하지 않으면 만료되는데 기본값이 30분이고 최소 2분 최대 6시간까지 가능함
+  const data = await response.json();
+  return data;
 }
