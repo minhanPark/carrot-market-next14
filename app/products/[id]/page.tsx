@@ -14,6 +14,12 @@ async function getIsOwner(userId: number) {
   return false;
 }
 
+export async function generateMetadata({ params }: { params: { id: string } }) {
+  return {
+    title: `product ${params.id}`,
+  };
+}
+
 async function getProduct(id: number) {
   const product = await db.product.findUnique({
     where: {
