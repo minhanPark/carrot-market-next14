@@ -6,6 +6,10 @@ import { Prisma } from "@prisma/client";
 import { unstable_cache as nextCache, revalidatePath } from "next/cache";
 import Link from "next/link";
 
+// static으로 생성된 파일을 강제적으로 다이나믹으로 바꾼다.
+// 즉 캐시를 사용하지 않음
+export const dynamic = "force-dynamic";
+
 const getCachedProducts = nextCache(getInitialProduct, ["home-products"]);
 
 async function getInitialProduct() {
