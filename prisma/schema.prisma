@@ -19,6 +19,9 @@ model User {
   updated_at DateTime   @updatedAt
   SMSToken   SMSToken[]
   Product    Product[]
+  posts      Post[]
+  comments   Comment[]
+  Like       Like[]
 }
 
 model SMSToken {
@@ -40,4 +43,46 @@ model Product {
   photo       String
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
+}
+
+model Post {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String?
+  views       Int     @default(0)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   Int
+  comments Comment[]
+  likes    Like[]
+}
+
+model Comment {
+  id      Int    @id @default(autoincrement())
+  payload String
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId Int
+}
+
+model Like {
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId Int
+
+  // 아이디가 userId와 postId의 조합으로 만들어진다고 알려줌
+  // 불필요한 id 컬럼을 만들지 않기 위해
+  @@id(name: "id", [userId, postId])
 }
